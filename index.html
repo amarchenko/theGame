@@ -1,0 +1,381 @@
+<html>
+    <head>
+        <title> The Game </title>
+        <link href="css/main.css" media="all" rel="stylesheet" type="text/css"/>
+        <script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
+        <script language="javascript" src="js/controls.js" type="text/javascript"></script>
+        <script language="javascript" src="js/jquery.hotkeys.js" type="text/javascript"></script>
+        <script language="javascript" src="js/util.js" type="text/javascript"></script>
+        <!--
+        <script language="javascript" src="javascripts/sprite.js" type="text/javascript"></script>
+        <script language="javascript" src="javascripts/sound.js" type="text/javascript"></script>
+        -->
+    </head>
+    <body>
+        <script type="text/javascript">
+            var DEBUG = 0;
+            var CANVAS_HEIGHT = 600;
+            var CANVAS_WIDTH = 800;
+            var FPS_FILTER = 40;
+            var FONT = "sans";
+            
+            var fps = 0, frameCounter = 1, now, lastUpdate = new Date;
+
+            // colors
+            var COLOR_BLACK = "#000";
+
+            var enemies = [];
+            var playerBullets = [];
+            var canvasElement = $("<canvas id='myCanvas' width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
+            var canvas = canvasElement.get(0).getContext("2d");
+
+            canvasElement.appendTo('body');
+
+            var textX = CANVAS_WIDTH - 50;
+            var textY = 20;
+
+            function LOG(a) {
+                if (DEBUG) console.log(a);
+            }
+
+            function update() {
+                //textX += 1;
+                //textY += 1;
+
+                playerBullets.forEach(function(bullet) {
+                    bullet.update();
+                });
+
+                playerBullets = playerBullets.filter(function(bullet) {
+                    return bullet.active;
+                });
+
+                enemies.forEach(function(enemy) {
+                    enemy.update();
+                });
+
+                enemies = enemies.filter(function(enemy) {
+                    return enemy.active;
+                });
+
+                if (Math.random() < 0.1) {
+                    enemies.push(createEnemy());
+                }
+
+                handleCollisions();
+            }
+
+            function draw() {
+                canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                player.draw();
+                canvas.fillStyle = COLOR_BLACK;
+                canvas.font = "12pt " + FONT;
+                canvas.fillText(fps.toFixed(0) + " FPS", textX, textY);
+
+                playerBullets.forEach(function(bullet) {
+                    bullet.draw();
+                });
+
+                enemies.forEach(function(enemy) {
+                    enemy.draw();
+                });
+            }
+
+            function handleCollisions() {
+                playerBullets.forEach(function(bullet) {
+                    enemies.forEach(function(enemy) {
+                        if (collides(bullet, enemy)) {
+                            enemy.damage(55);
+                            //enemy.explode();
+                            bullet.active = false;
+                        }
+                    });
+                });
+
+                enemies.forEach(function(enemy) {
+                    if (collides(enemy, player)) {
+                        //enemy.explode();
+                        //player.explode();
+                        player.damage(1);
+                    }
+                });
+            }
+
+            function ClassCharacter() {
+                this.color = "#A00";
+                this.x = CANVAS_WIDTH / 2;
+                this.y = CANVAS_HEIGHT / 2;
+                this.width = 32;
+                this.height = 32;
+                this.health = 100;
+                this.hpScale = this.height / this.health;
+                this.bulletSpeed = 20;
+                this.xVelocity = 0;
+                this.yVelocity = 0;
+
+                this.setInitialHealth = function(hp) {
+                    if (hp > 0) {
+                        this.health = hp
+                        this.hpScale = this.height / this.health;
+                    }
+                }
+
+                this.midpoint = function() {
+                    return {
+                        x: this.x + this.width / 2,
+                        y: this.y + this.height / 2
+                    };
+                }
+
+                this.draw = function() {
+                    LOG("Drawing character...");
+                    canvas.strokeStyle = COLOR_BLACK;
+                    canvas.strokeRect(this.x, this.y, this.width, this.height);
+                    canvas.fillStyle = this.color;
+                    heightScale = this.height - this.hpScale * this.health;
+                    canvas.fillRect(this.x + 1, // additional pixel to make border visible
+                                    this.y + 1 + heightScale,
+                                    this.width - 2, // 2 additional pixels to make bottom-right borders visible
+                                    this.height - 2 - heightScale);
+                }
+
+                this.shoot = function(mPos) {
+                    LOG("Pew pew!");
+                    var midpoint = player.midpoint();
+
+                    distX = mPos.x - midpoint.x;
+                    distY = mPos.y - midpoint.y;
+
+                    distance = Math.sqrt(distX * distX + distY * distY);
+                    time =  distance / this.bulletSpeed;
+
+                    playerBullets.push(createBullet({
+                        xVelocity: distX / time,
+                        yVelocity: distY / time,
+                        x: midpoint.x,
+                        y: midpoint.y
+                    }));
+                }
+
+                this.damage = function(damage) {
+                    if (damage >= this.health) {
+                        this.health = 0;
+                        this.explode();
+                    } else {
+                        this.health -= damage;
+                    }
+                }
+
+                this.explode = function() {
+                    // add explode graphics
+                }
+            };
+
+            function ClassPlayer() {
+            ClassCharacter.apply(this);
+
+            this.xVelocity = this.yVelocity = 5;
+
+            this.handleKeys = function() {
+                    LOG("Handling player's keys...");
+
+                    if (keydown.space) {
+                        //keydown.event.preventDefault();
+                        this.shoot({x:CANVAS_WIDTH / 2, y:0});
+                    }
+                    if (mousedown.pressed) {
+                        c = mousemove.coords ? mousemove.coords : mousedown.coords
+                        this.shoot(c);
+                    }
+                    if (keydown.a) { this.x -= this.xVelocity; }
+                    if (keydown.d) { this.x += this.xVelocity; }
+                    if (keydown.w) { this.y -= this.yVelocity; }
+                    if (keydown.s) { this.y += this.yVelocity; }
+
+                    this.x = this.x.keepInBounds(0, CANVAS_WIDTH - this.width);
+                    this.y = this.y.keepInBounds(0, CANVAS_HEIGHT - this.height);
+                }
+            }
+
+            var player = new ClassPlayer();
+
+            function createBullet(I) {
+                I.active = true;
+                I.width = 3;
+                I.height = 3;
+                I.color = "#000";
+
+                I.isInBounds = function() {
+                    return I.x >= 0 && I.x <= CANVAS_WIDTH &&
+                        I.y >= 0 && I.y <= CANVAS_HEIGHT;
+                };
+
+                I.draw = function() {
+                    canvas.fillStyle = this.color;
+                    canvas.fillRect(this.x, this.y, this.width, this.height);
+                };
+
+                I.explode = function() {
+                    I.active = false;
+                    // add explode graphics
+                }
+
+                I.update = function() {
+                    I.x += I.xVelocity;
+                    I.y += I.yVelocity;
+                    I.active = I.active && I.isInBounds();
+                };
+
+                return I;
+            }
+
+            function ClassEnemy() {
+                ClassCharacter.apply(this);
+                this.active = true;
+
+                this.isInBounds = function() {
+                    return this.x >= 0 && this.x <= CANVAS_WIDTH &&
+                        this.y >= 0 && this.y <= CANVAS_HEIGHT;
+                };
+
+                this.explode = function() {
+                    this.active = false;
+                    // add explode graphics
+                }
+
+            }
+
+            function ClassEnemyRanger() {
+                ClassEnemy.apply(this);
+                // appearance
+                this.width = this.height = 16;
+                this.color = "#FF0" // yellow
+                // stats
+                this.setInitialHealth(50);
+                this.xVelocity = this.yVelocity = 5;
+
+            }
+
+            function ClassEnemySolder() {
+                ClassEnemy.apply(this);
+                // appearance
+                this.width = this.height = 32;
+                this.color = "#00F"; // blue
+                // stats
+                this.setInitialHealth(150);
+                this.xVelocity = this.yVelocity = 2;
+            }
+
+            function ClassEnemyHeavySolder() {
+                ClassEnemy.apply(this);
+                // appearance
+                this.width = this.height = 48;
+                this.color = "#A2F"; // purple
+                // stats
+                this.setInitialHealth(300);
+                this.xVelocity = this.yVelocity = 1;
+            }
+
+            /*
+            function createEnemy(I) { // creates an enemy with falling-down-maneuvering
+                I = I || {};
+
+                //ClassEnemyRanger.apply(I);
+                //ClassEnemySolder.apply(I);
+                ClassEnemyHeavySolder.apply(I);
+
+                // for sinusoid movement only
+                // has to be implemented as addSinusoidMotion()
+                I.age = Math.floor(Math.random() * 128);
+                I.x = CANVAS_WIDTH / 4 + Math.random() * CANVAS_WIDTH / 2;
+                I.y = 0;
+
+                I.update = function() {
+                    I.x += I.xVelocity;
+                    I.y += I.yVelocity;
+                    I.xVelocity = 3 * Math.sin(I.age * Math.PI / 64);
+                    I.age++;
+                    I.active = I.active && I.isInBounds();
+                };
+
+                return I;
+            };
+            */
+
+            function createEnemy(I) { // creates an enemy with circular motion
+                I = I || {};
+
+                ClassEnemyHeavySolder.apply(I);
+                addCircleMotion(I);
+
+                return I;
+            };
+
+            function addCircleMotion(I) {
+
+                // I.angle = I.initialAngle;
+                // I.angleStep ??? smooth movement to player
+                // I.radiusStep ??? cooperate with angleStep
+
+                // I.initialAngle = randomize it!
+                I.initialAngle = -Math.PI / 2;
+                I.angle = I.initialAngle;
+                I.angleStep = Math.PI / 36; // become close to player every "angleStep" degrees;
+                I.stepIter = 1;
+                I.radius = 350; // need to think about it; half of the screen
+
+                I.recalc = function() {
+                    I.x = Math.cos(I.angle) * I.radius + CANVAS_WIDTH / 2;
+                    I.y = Math.sin(I.angle) * I.radius + CANVAS_HEIGHT / 2;
+                };
+
+                I.recalc();
+
+                I.update = function() {
+                    I.recalc();
+
+                    I.angle += 0.03; // angleStep???
+
+                    if (I.angle >= I.initialAngle + I.angleStep * I.stepIter) { // step-angle + initial-angle
+                        //I.angle = -Math.PI / 2; // set to initial-angle
+                        I.stepIter++;
+                        I.radius -= 2; // radiusStep
+                        if (I.radius <= 20)
+                            I.radius = 20;
+                    }
+                    if (I.angle >= I.initialAnlge + 2 * Math.PI) { // ATW completed
+                        I.angle = I.initialAngle;
+                        I.stepIter = 1;
+                    }
+                };
+            };
+
+            /*
+            canvasElement.get(0).addEventListener("click", function(e) {
+                e.preventDefault();
+                player.shoot(getMousePos(canvasElement.get(0), e));
+            })
+            /*
+            $(canvasElement).click(function(e) {
+                e.preventDefault();
+                player.shoot(getMousePos(canvasElement.get(0), e));
+            })
+            */
+
+            // Game loop
+            setInterval(function() {
+                player.handleKeys();
+                update();
+                draw();
+                elapsed = ((now = new Date) - lastUpdate);
+                if (elapsed > 1000) { // update FPS value once per second
+                    fps = (frameCounter / elapsed * 1000);
+                    frameCounter = 0;
+                    lastUpdate = now;
+                }
+                ++frameCounter;
+            }, 1000/FPS_FILTER);
+            //}, 1); // NO FPS LIMITS!
+        </script>
+    </body>
+</html>

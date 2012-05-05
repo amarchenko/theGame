@@ -1,0 +1,42 @@
+<html>
+<body>
+
+<canvas id="myCanvas" width="800" height="600" style="border:1px solid #c3c3c3;">
+Your browser does not support the canvas element.
+</canvas>
+
+<script type="text/javascript">
+
+var index = 0;
+var angle = 0;
+var r = 300;
+
+function main() {
+    var c=document.getElementById("myCanvas");
+    var ctx=c.getContext("2d");
+
+    var x, y;
+
+    ctx.fillStyle="#FF0000";
+    ctx.clearRect(0, 0, 800, 600)
+
+    x = Math.cos(angle) * r + 400;
+    y = Math.sin(angle) * r + 300;
+
+    ctx.fillRect(x, y, 50, 50);
+    angle += 0.05;
+
+    //ctx.fillRect(0+index, 0+index, 50, 50);
+    //index += 1;
+}
+
+main();
+
+setInterval(function() {
+    main();
+}, 1000 / 30);
+
+</script>
+
+</body>
+</html>
