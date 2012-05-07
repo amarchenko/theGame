@@ -285,8 +285,26 @@
             };
 
             function addSurroundingMotion(I) {
-                I.x = CANVAS_WIDTH / 4 + Math.random() * CANVAS_WIDTH / 2;
-                I.y = 0;
+                variant = Math.floor((Math.random() * 4) + 1);
+                switch (variant) {
+                case 1:
+                    I.x = Math.floor((Math.random() * (CANVAS_WIDTH - I.width)) + 1);
+                    I.y = 0;
+                    break;
+                case 2:
+                    I.x = Math.floor((Math.random() * (CANVAS_WIDTH - I.width)) + 1);
+                    I.y = CANVAS_HEIGHT - I.height;
+                    break;
+                case 3:
+                    I.x = 0;
+                    I.y = Math.random() * (CANVAS_HEIGHT - I.height);
+                    break;
+                case 4:
+                    I.x = CANVAS_WIDTH - I.width;
+                    I.y = Math.random() * (CANVAS_HEIGHT - I.height);
+                    break;
+                }
+
                 I.speed = I.xVelocity;
 
                 I.recalc = function() {
@@ -299,8 +317,6 @@
                     I.xVelocity = distX / time;
                     I.yVelocity = distY / time;
                 };
-
-                //I.recalc();
 
                 I.update = function() {
                     I.recalc();
