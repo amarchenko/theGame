@@ -18,7 +18,7 @@
             var CANVAS_WIDTH = 800;
             var FPS_FILTER = 40;
             var FONT = "sans";
-            
+
             var fps = 0, frameCounter = 1, now, lastUpdate = new Date;
 
             // colors
@@ -39,9 +39,6 @@
             }
 
             function update() {
-                //textX += 1;
-                //textY += 1;
-
                 playerBullets.forEach(function(bullet) {
                     bullet.update();
                 });
@@ -135,7 +132,7 @@
                     heightScale = this.height - this.hpScale * this.health;
                     canvas.fillRect(this.x + 1, // additional pixel to make border visible
                                     this.y + 1 + heightScale,
-                                    this.width - 2, // 2 additional pixels to make bottom-right borders visible
+                                    this.width - 2, // sub 2 pixels to make bottom-right borders visible
                                     this.height - 2 - heightScale);
                 }
 
