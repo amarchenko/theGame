@@ -277,10 +277,36 @@
                 I = I || {};
 
                 ClassEnemyHeavySolder.apply(I);
-                addCircleMotion(I);
+                //addCircleMotion(I);
                 //addFallingMotion(I);
+                addSurroundingMotion(I);
 
                 return I;
+            };
+
+            function addSurroundingMotion(I) {
+                I.x = CANVAS_WIDTH / 4 + Math.random() * CANVAS_WIDTH / 2;
+                I.y = 0;
+                I.speed = I.xVelocity;
+
+                I.recalc = function() {
+                    target = player.midpoint();
+                    distX = target.x - I.x;
+                    distY = target.y - I.y;
+
+                    distance = Math.sqrt(distX * distX + distY * distY);
+                    time =  distance / I.speed;
+                    I.xVelocity = distX / time;
+                    I.yVelocity = distY / time;
+                };
+
+                //I.recalc();
+
+                I.update = function() {
+                    I.recalc();
+                    I.x += I.xVelocity;
+                    I.y += I.yVelocity;
+                };
             };
 
             function addFallingMotion(I) { // creates an enemy with falling-down-maneuvering
