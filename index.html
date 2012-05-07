@@ -200,7 +200,7 @@
                 I.active = true;
                 I.width = 3;
                 I.height = 3;
-                I.color = "#000";
+                I.color = COLOR_BLACK;
 
                 I.isInBounds = function() {
                     return I.x >= 0 && I.x <= CANVAS_WIDTH &&
@@ -273,16 +273,17 @@
                 this.xVelocity = this.yVelocity = 1;
             }
 
-            /*
-            function createEnemy(I) { // creates an enemy with falling-down-maneuvering
+            function createEnemy(I) { // creates an enemy with circular motion
                 I = I || {};
 
-                //ClassEnemyRanger.apply(I);
-                //ClassEnemySolder.apply(I);
                 ClassEnemyHeavySolder.apply(I);
+                addCircleMotion(I);
+                //addFallingMotion(I);
 
-                // for sinusoid movement only
-                // has to be implemented as addSinusoidMotion()
+                return I;
+            };
+
+            function addFallingMotion(I) { // creates an enemy with falling-down-maneuvering
                 I.age = Math.floor(Math.random() * 128);
                 I.x = CANVAS_WIDTH / 4 + Math.random() * CANVAS_WIDTH / 2;
                 I.y = 0;
@@ -294,22 +295,9 @@
                     I.age++;
                     I.active = I.active && I.isInBounds();
                 };
-
-                return I;
-            };
-            */
-
-            function createEnemy(I) { // creates an enemy with circular motion
-                I = I || {};
-
-                ClassEnemyHeavySolder.apply(I);
-                addCircleMotion(I);
-
-                return I;
             };
 
             function addCircleMotion(I) {
-
                 // I.angle = I.initialAngle;
                 // I.angleStep ??? smooth movement to player
                 // I.radiusStep ??? cooperate with angleStep
@@ -372,7 +360,7 @@
                 }
                 ++frameCounter;
             }, 1000/FPS_FILTER);
-            //}, 1); // NO FPS LIMITS!
+            //}, 1); // NO FPS LIMIT!
         </script>
     </body>
 </html>
