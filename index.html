@@ -166,7 +166,7 @@
                 this.explode = function() {
                     // add explode graphics
                 }
-            };
+            }
 
             function ClassPlayer() {
             ClassCharacter.apply(this);
@@ -196,36 +196,6 @@
 
             var player = new ClassPlayer();
 
-            function createBullet(I) {
-                I.active = true;
-                I.width = 3;
-                I.height = 3;
-                I.color = COLOR_BLACK;
-
-                I.isInBounds = function() {
-                    return I.x >= 0 && I.x <= CANVAS_WIDTH &&
-                        I.y >= 0 && I.y <= CANVAS_HEIGHT;
-                };
-
-                I.draw = function() {
-                    canvas.fillStyle = this.color;
-                    canvas.fillRect(this.x, this.y, this.width, this.height);
-                };
-
-                I.explode = function() {
-                    I.active = false;
-                    // add explode graphics
-                }
-
-                I.update = function() {
-                    I.x += I.xVelocity;
-                    I.y += I.yVelocity;
-                    I.active = I.active && I.isInBounds();
-                };
-
-                return I;
-            }
-
             function ClassEnemy() {
                 ClassCharacter.apply(this);
                 this.active = true;
@@ -233,7 +203,7 @@
                 this.isInBounds = function() {
                     return this.x >= 0 && this.x <= CANVAS_WIDTH &&
                         this.y >= 0 && this.y <= CANVAS_HEIGHT;
-                };
+                }
 
                 this.explode = function() {
                     this.active = false;
@@ -282,7 +252,37 @@
                 addSurroundingMotion(I);
 
                 return I;
-            };
+            }
+            
+            function createBullet(I) {
+                I.active = true;
+                I.width = 3;
+                I.height = 3;
+                I.color = COLOR_BLACK;
+
+                I.isInBounds = function() {
+                    return I.x >= 0 && I.x <= CANVAS_WIDTH &&
+                        I.y >= 0 && I.y <= CANVAS_HEIGHT;
+                }
+
+                I.draw = function() {
+                    canvas.fillStyle = this.color;
+                    canvas.fillRect(this.x, this.y, this.width, this.height);
+                }
+
+                I.explode = function() {
+                    I.active = false;
+                    // add explode graphics
+                }
+
+                I.update = function() {
+                    I.x += I.xVelocity;
+                    I.y += I.yVelocity;
+                    I.active = I.active && I.isInBounds();
+                }
+
+                return I;
+            }
 
             function addSurroundingMotion(I) {
                 variant = Math.floor((Math.random() * 4) + 1);
@@ -316,14 +316,14 @@
                     time =  distance / I.speed;
                     I.xVelocity = distX / time;
                     I.yVelocity = distY / time;
-                };
+                }
 
                 I.update = function() {
                     I.recalc();
                     I.x += I.xVelocity;
                     I.y += I.yVelocity;
-                };
-            };
+                }
+            }
 
             function addFallingMotion(I) { // creates an enemy with falling-down-maneuvering
                 I.age = Math.floor(Math.random() * 128);
@@ -336,8 +336,8 @@
                     I.xVelocity = 3 * Math.sin(I.age * Math.PI / 64);
                     I.age++;
                     I.active = I.active && I.isInBounds();
-                };
-            };
+                }
+            }
 
             function addCircleMotion(I) {
                 // I.angle = I.initialAngle;
@@ -354,7 +354,7 @@
                 I.recalc = function() {
                     I.x = Math.cos(I.angle) * I.radius + CANVAS_WIDTH / 2;
                     I.y = Math.sin(I.angle) * I.radius + CANVAS_HEIGHT / 2;
-                };
+                }
 
                 I.recalc();
 
@@ -374,8 +374,8 @@
                         I.angle = I.initialAngle;
                         I.stepIter = 1;
                     }
-                };
-            };
+                }
+            }
 
             /*
             canvasElement.get(0).addEventListener("click", function(e) {
