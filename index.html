@@ -21,18 +21,22 @@
 
             var fps = 0, frameCounter = 1, now, lastUpdate = new Date;
 
-            // colors
             var COLOR_BLACK = "#000";
 
+            var player = new ClassPlayer();
+            var gameManager = new ClassGameManager();
+            //var score = 0;
             var enemies = [];
             var playerBullets = [];
+
             var canvasElement = $("<canvas id='myCanvas' width='" + CANVAS_WIDTH + "' height='" + CANVAS_HEIGHT + "'></canvas>");
             var canvas = canvasElement.get(0).getContext("2d");
-
             canvasElement.appendTo('body');
 
-            var textX = CANVAS_WIDTH - 50;
-            var textY = 20;
+            var fpsPosX = CANVAS_WIDTH - 60;
+            var fpsPosY = 20;
+            var scorePosX = 10;
+            var scorePosY = 20;
 
             function LOG(a) {
                 if (DEBUG) console.log(a);
@@ -67,7 +71,8 @@
                 player.draw();
                 canvas.fillStyle = COLOR_BLACK;
                 canvas.font = "12pt " + FONT;
-                canvas.fillText(fps.toFixed(0) + " FPS", textX, textY);
+                canvas.fillText(fps.toFixed(0) + " FPS", fpsPosX, fpsPosY);
+                canvas.fillText("Score: " + gameManager.score, scorePosX, scorePosY);
 
                 playerBullets.forEach(function(bullet) {
                     bullet.draw();
@@ -82,8 +87,9 @@
                 playerBullets.forEach(function(bullet) {
                     enemies.forEach(function(enemy) {
                         if (collides(bullet, enemy)) {
-                            enemy.damage(55);
-                            //enemy.explode();
+                            gameManager.score += (enemy.damage(bullet.power) / 10);
+                            if (!enemy.health)
+                                gameManager.score += enemy.scoreRatio;
                             bullet.active = false;
                         }
                     });
@@ -96,6 +102,10 @@
                         player.damage(1);
                     }
                 });
+            }
+
+            function ClassGameManager() {
+                this.score = 0;
             }
 
             function ClassCharacter() {
@@ -114,6 +124,7 @@
                     if (hp > 0) {
                         this.health = hp
                         this.hpScale = this.height / this.health;
+                        this.scoreRatio = this.health / 10;
                     }
                 }
 
@@ -155,12 +166,16 @@
                 }
 
                 this.damage = function(damage) {
+                    var loss;
                     if (damage >= this.health) {
+                        loss = this.health;
                         this.health = 0;
                         this.explode();
                     } else {
                         this.health -= damage;
+                        loss = damage;
                     }
+                    return loss;
                 }
 
                 this.explode = function() {
@@ -169,11 +184,11 @@
             }
 
             function ClassPlayer() {
-            ClassCharacter.apply(this);
+                ClassCharacter.apply(this);
 
-            this.xVelocity = this.yVelocity = 5;
+                this.xVelocity = this.yVelocity = 5;
 
-            this.handleKeys = function() {
+                this.handleKeys = function() {
                     LOG("Handling player's keys...");
 
                     if (keydown.space) {
@@ -193,8 +208,6 @@
                     this.y = this.y.keepInBounds(0, CANVAS_HEIGHT - this.height);
                 }
             }
-
-            var player = new ClassPlayer();
 
             function ClassEnemy() {
                 ClassCharacter.apply(this);
@@ -247,18 +260,20 @@
                 I = I || {};
 
                 ClassEnemyHeavySolder.apply(I);
+                //ClassEnemyRanger.apply(I);
                 //addCircleMotion(I);
                 //addFallingMotion(I);
                 addSurroundingMotion(I);
 
                 return I;
             }
-            
+
             function createBullet(I) {
                 I.active = true;
                 I.width = 3;
                 I.height = 3;
                 I.color = COLOR_BLACK;
+                I.power = 50; // damage given to an enemy
 
                 I.isInBounds = function() {
                     return I.x >= 0 && I.x <= CANVAS_WIDTH &&
