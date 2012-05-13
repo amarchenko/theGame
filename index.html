@@ -18,6 +18,8 @@
             var CANVAS_WIDTH = 800;
             var FPS_FILTER = 40;
             var FONT = "sans";
+            var KILLS_TO_NEXT_LEVEL = 20;
+            var lastKillsToNextLevel = KILLS_TO_NEXT_LEVEL;
 
             var fps = 0, frameCounter = 1, now, lastUpdate = new Date;
 
@@ -25,7 +27,6 @@
 
             var player = new ClassPlayer();
             var gameManager = new ClassGameManager();
-            //var score = 0;
             var enemies = [];
             var playerBullets = [];
 
@@ -88,8 +89,10 @@
                     enemies.forEach(function(enemy) {
                         if (collides(bullet, enemy)) {
                             gameManager.score += (enemy.damage(bullet.power) / 10);
-                            if (!enemy.health)
+                            if (!enemy.health) {
+                                gameManager.kills += 1;
                                 gameManager.score += enemy.scoreRatio;
+                            }
                             bullet.active = false;
                         }
                     });
@@ -106,6 +109,7 @@
 
             function ClassGameManager() {
                 this.score = 0;
+                this.kills = 0;
             }
 
             function ClassCharacter() {
@@ -258,12 +262,38 @@
 
             function createEnemy(I) { // creates an enemy with circular motion
                 I = I || {};
+                KILLS_TO_NEXT_LEVEL
 
-                ClassEnemyHeavySolder.apply(I);
+                if (gameManager.kills <= KILLS_TO_NEXT_LEVEL) {
+                    ClassEnemySolder.apply(I);
+                    addCircleMotion(I);
+                }
+                else if (gameManager.kills <= KILLS_TO_NEXT_LEVEL * 2) {
+                    ClassEnemySolder.apply(I);
+                    addFallingMotion(I);
+                }
+                else if (gameManager.kills <= KILLS_TO_NEXT_LEVEL * 3) {
+                    ClassEnemyRanger.apply(I);
+                    addCircleMotion(I);
+                }
+                else if (gameManager.kills <= KILLS_TO_NEXT_LEVEL * 4) {
+                    ClassEnemyRanger.apply(I);
+                    addFallingMotion(I);
+                }
+                else if (gameManager.kills <= KILLS_TO_NEXT_LEVEL * 5) {
+                    ClassEnemyHeavySolder.apply(I);
+                    addFallingMotion(I);
+                }
+                else {
+                    ClassEnemyHeavySolder.apply(I);
+                    addSurroundingMotion(I);
+                }
+
+                //ClassEnemyHeavySolder.apply(I);
                 //ClassEnemyRanger.apply(I);
                 //addCircleMotion(I);
                 //addFallingMotion(I);
-                addSurroundingMotion(I);
+                //addSurroundingMotion(I);
 
                 return I;
             }
