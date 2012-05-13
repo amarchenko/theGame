@@ -19,7 +19,6 @@
             var FPS_FILTER = 40;
             var FONT = "sans";
             var KILLS_TO_NEXT_LEVEL = 20;
-            var lastKillsToNextLevel = KILLS_TO_NEXT_LEVEL;
 
             var fps = 0, frameCounter = 1, now, lastUpdate = new Date;
 
@@ -196,7 +195,6 @@
                     LOG("Handling player's keys...");
 
                     if (keydown.space) {
-                        //keydown.event.preventDefault();
                         this.shoot({x:CANVAS_WIDTH / 2, y:0});
                     }
                     if (mousedown.pressed) {
@@ -288,12 +286,6 @@
                     ClassEnemyHeavySolder.apply(I);
                     addSurroundingMotion(I);
                 }
-
-                //ClassEnemyHeavySolder.apply(I);
-                //ClassEnemyRanger.apply(I);
-                //addCircleMotion(I);
-                //addFallingMotion(I);
-                //addSurroundingMotion(I);
 
                 return I;
             }
