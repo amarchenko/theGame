@@ -109,6 +109,13 @@
             function ClassGameManager() {
                 this.score = 0;
                 this.kills = 0;
+                // manageEnemyCreation(I) <-- ref to an enemy
+                // save some internal states to decide:
+                // 1) at which level we at
+                // 2) which enemy should be created
+                // 3) which movement pattern should be applied
+                // 4) which weapon should be added
+                // 5) should we increase an amount of HP
             }
 
             function ClassCharacter() {
@@ -260,8 +267,8 @@
 
             function createEnemy(I) { // creates an enemy with circular motion
                 I = I || {};
-                KILLS_TO_NEXT_LEVEL
 
+                // move this to GameManger - begin
                 if (gameManager.kills <= KILLS_TO_NEXT_LEVEL) {
                     ClassEnemySolder.apply(I);
                     addCircleMotion(I);
@@ -286,6 +293,7 @@
                     ClassEnemyHeavySolder.apply(I);
                     addSurroundingMotion(I);
                 }
+                // move this to GameManger - end
 
                 return I;
             }
